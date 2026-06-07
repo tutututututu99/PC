@@ -506,8 +506,6 @@ function setupEventHandlers() {
     // Toggle Login / Register mode
     if (elements.linkToggleAuthMode) {
         elements.linkToggleAuthMode.addEventListener('click', () => {
-            if (elements.linkToggleAuthMode.style.cursor === 'not-allowed') return;
-            
             const submitBtn = elements.btnSubmitAuth;
             if (currentAuthMode === 'login') {
                 currentAuthMode = 'register';
