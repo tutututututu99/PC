@@ -38,6 +38,19 @@ const levelConfigs = {
     reflexMixed: { squeeze: 10, relax: 5, reps: 12 }
 };
 
+function calculateSqueezes(level, reps) {
+    if (level === 'goodMorning') {
+        return 20; // 20 siết nhanh, 5 Kegel ngược
+    }
+    if (level === 'powerCombo') {
+        return 54; // 20 + 12 + 12 + 10 siết cơ, còn lại là nghỉ & Kegel ngược
+    }
+    if (level === 'nightRecovery') {
+        return 15; // 15 siết nhanh, 15 Kegel ngược, 5 hít thở
+    }
+    return reps;
+}
+
 // --- AUDIO CONTROLLER (Web Audio API Synthesizer) ---
 class AudioController {
     constructor() {
@@ -1135,7 +1148,7 @@ function saveWorkoutLog() {
     
     // Calculate Streak & Totals
     state.totalSessions += 1;
-    state.totalRepsCompleted += state.totalReps;
+    state.totalRepsCompleted += calculateSqueezes(state.selectedLevel, state.totalReps);
     
     calculateStreak();
     saveData();
@@ -1207,7 +1220,11 @@ function loadData() {
         state.history = JSON.parse(localStorage.getItem('pc_flex_history')) || [];
         state.streak = parseInt(localStorage.getItem('pc_flex_streak')) || 0;
         state.totalSessions = parseInt(localStorage.getItem('pc_flex_total_sessions')) || 0;
-        state.totalRepsCompleted = parseInt(localStorage.getItem('pc_flex_total_reps')) || 0;
+        state.totalRepsCompleted = state.history.reduce((sum, log) => {
+            const level = log.level;
+            const reps = log.config ? (log.config.reps || 0) : (log.reps || 0);
+            return sum + calculateSqueezes(level, reps);
+        }, 0);
         
         // Recalculate streak on load to ensure it resets if a day was missed
         calculateStreak();
@@ -1701,7 +1718,11 @@ async function syncDataOnline() {
         // 4. Lưu lại local
         state.history = merged;
         state.totalSessions = state.history.length;
-        state.totalRepsCompleted = state.history.reduce((sum, log) => sum + (log.config.reps || 0), 0);
+        state.totalRepsCompleted = state.history.reduce((sum, log) => {
+            const lvl = log.level;
+            const rps = log.config ? (log.config.reps || 0) : (log.reps || 0);
+            return sum + calculateSqueezes(lvl, rps);
+        }, 0);
         calculateStreak();
         saveData();
         renderStats();
