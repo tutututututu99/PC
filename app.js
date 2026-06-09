@@ -27,7 +27,7 @@ const state = {
 const levelConfigs = {
     goodMorning: { squeeze: 1, relax: 2, reps: 25 },
     powerCombo: { squeeze: 1, relax: 1, reps: 63 },
-    nightRecovery: { squeeze: 0, relax: 5, reps: 35 },
+    nightRecovery: { squeeze: 0, relax: 5, reps: 31 },
     beginner: { squeeze: 3, relax: 3, reps: 10 },
     intermediate: { squeeze: 5, relax: 5, reps: 12 },
     advanced: { squeeze: 10, relax: 10, reps: 10 },
@@ -661,7 +661,7 @@ function updateUIConfigs() {
     } else if (state.selectedLevel === 'powerCombo') {
         elements.orbSubText.textContent = 'Bấm Bắt đầu để tập Combo Sức Mạnh - 63 lượt';
     } else if (state.selectedLevel === 'nightRecovery') {
-        elements.orbSubText.textContent = 'Bấm Bắt đầu để tập Phục Hồi Ban Đêm - 35 lượt';
+        elements.orbSubText.textContent = 'Bấm Bắt đầu để tập Phục Hồi Ban Đêm - 31 lượt';
     } else if (state.selectedLevel === 'mixed') {
         elements.orbSubText.textContent = 'Bấm Bắt đầu để tập Cấp độ Hỗn hợp Lâm Sàng (11 lượt)';
     } else if (state.selectedLevel === 'pyramidMixed') {
@@ -855,7 +855,9 @@ function enterSqueezePhase() {
     } else if (state.selectedLevel === 'nightRecovery') {
         if (state.currentRep <= 15) {
             state.squeezeDuration = 1; // Fast flicks (Squeeze)
-        } else if (state.currentRep <= 30) {
+        } else if (state.currentRep === 16) {
+            state.squeezeDuration = 0; // 5s Rest before Reverse Kegel
+        } else if (state.currentRep <= 26) {
             state.squeezeDuration = 5; // Reverse Kegel (Hold)
         } else {
             state.squeezeDuration = 5; // Deep breathing (Inhale)
@@ -898,8 +900,8 @@ function enterSqueezePhase() {
     // Identify special states
     const isReverseKegelHold = (state.selectedLevel === 'goodMorning' && state.currentRep >= 21) ||
                                 (state.selectedLevel === 'powerCombo' && state.currentRep >= 59) ||
-                                (state.selectedLevel === 'nightRecovery' && state.currentRep >= 16 && state.currentRep <= 30);
-    const isBreathingInhale = (state.selectedLevel === 'nightRecovery' && state.currentRep >= 31);
+                                (state.selectedLevel === 'nightRecovery' && state.currentRep >= 17 && state.currentRep <= 26);
+    const isBreathingInhale = (state.selectedLevel === 'nightRecovery' && state.currentRep >= 27);
     
     if (isReverseKegelHold) {
         elements.orb.classList.add('resting');
@@ -910,12 +912,12 @@ function enterSqueezePhase() {
         } else if (state.selectedLevel === 'powerCombo') {
             elements.orbSubText.textContent = `Hít vào - Đẩy nhẹ cơ PC ra ngoài - Lượt ${state.currentRep - 58}/5`;
         } else if (state.selectedLevel === 'nightRecovery') {
-            elements.orbSubText.textContent = `Hít vào - Đẩy nhẹ cơ PC ra ngoài - Lượt ${state.currentRep - 15}/15`;
+            elements.orbSubText.textContent = `Hít vào - Đẩy nhẹ cơ PC ra ngoài - Lượt ${state.currentRep - 16}/10`;
         }
     } else if (isBreathingInhale) {
         elements.orb.classList.add('relaxing');
         elements.orbAction.textContent = 'HÍT VÀO';
-        elements.orbSubText.textContent = `Pha 3: Hít sâu chậm rãi bằng bụng - Lượt ${state.currentRep - 30}/5`;
+        elements.orbSubText.textContent = `Pha 3: Hít sâu chậm rãi bằng bụng - Lượt ${state.currentRep - 26}/5`;
     } else {
         elements.orb.classList.add('squeezing');
         elements.orbAction.textContent = 'SIẾT CƠ';
@@ -1019,7 +1021,9 @@ function enterRelaxPhase() {
     } else if (state.selectedLevel === 'nightRecovery') {
         if (state.currentRep <= 15) {
             state.relaxDuration = 1; // Fast flicks (Relax)
-        } else if (state.currentRep <= 30) {
+        } else if (state.currentRep === 16) {
+            state.relaxDuration = 5; // 5s Rest before Reverse Kegel
+        } else if (state.currentRep <= 26) {
             state.relaxDuration = 5; // Reverse Kegel
         } else {
             state.relaxDuration = 10; // Deep breathing
@@ -1034,11 +1038,12 @@ function enterRelaxPhase() {
     elements.orb.classList.remove('resting');
     
     // Determine if it is a resting or stretching phase
-    const isPureRest = (state.selectedLevel === 'powerCombo' && (state.currentRep === 21 || state.currentRep === 34 || state.currentRep === 47 || state.currentRep === 58));
+    const isPureRest = (state.selectedLevel === 'powerCombo' && (state.currentRep === 21 || state.currentRep === 34 || state.currentRep === 47 || state.currentRep === 58)) ||
+                       (state.selectedLevel === 'nightRecovery' && state.currentRep === 16);
     const isReverseKegelRest = (state.selectedLevel === 'goodMorning' && state.currentRep >= 21) ||
                                (state.selectedLevel === 'powerCombo' && state.currentRep >= 59) ||
-                               (state.selectedLevel === 'nightRecovery' && state.currentRep >= 16 && state.currentRep <= 30);
-    const isBreathingExhale = (state.selectedLevel === 'nightRecovery' && state.currentRep >= 31);
+                               (state.selectedLevel === 'nightRecovery' && state.currentRep >= 17 && state.currentRep <= 26);
+    const isBreathingExhale = (state.selectedLevel === 'nightRecovery' && state.currentRep >= 27);
                       
     if (isPureRest) {
         elements.orb.classList.add('resting');
@@ -1052,6 +1057,9 @@ function enterRelaxPhase() {
             elements.orbSubText.textContent = 'Nghỉ phục hồi 1 phút - Chuẩn bị Pha 4';
         } else if (state.currentRep === 58) {
             elements.orbSubText.textContent = 'Nghỉ phục hồi 10s - Chuẩn bị tập Kegel ngược';
+        } else if (state.selectedLevel === 'nightRecovery' && state.currentRep === 16) {
+            elements.orbAction.textContent = 'NGHỈ NGƠI';
+            elements.orbSubText.textContent = 'Nghỉ phục hồi 5s - Chuẩn bị tập Kegel ngược';
         }
     } else if (isReverseKegelRest) {
         elements.orb.classList.add('relaxing');
@@ -1062,12 +1070,12 @@ function enterRelaxPhase() {
         } else if (state.selectedLevel === 'powerCombo') {
             elements.orbSubText.textContent = `Thở ra - Thả lỏng cơ PC tự nhiên - Lượt ${state.currentRep - 58}/5`;
         } else if (state.selectedLevel === 'nightRecovery') {
-            elements.orbSubText.textContent = `Thở ra - Thả lỏng cơ PC tự nhiên - Lượt ${state.currentRep - 15}/15`;
+            elements.orbSubText.textContent = `Thở ra - Thả lỏng cơ PC tự nhiên - Lượt ${state.currentRep - 16}/10`;
         }
     } else if (isBreathingExhale) {
         elements.orb.classList.add('relaxing');
         elements.orbAction.textContent = 'THỞ RA';
-        elements.orbSubText.textContent = `Thở ra chậm rãi, xẹp bụng - Lượt ${state.currentRep - 30}/5`;
+        elements.orbSubText.textContent = `Thở ra chậm rãi, xẹp bụng - Lượt ${state.currentRep - 26}/5`;
     } else {
         elements.orb.classList.add('relaxing');
         elements.orbAction.textContent = 'THẢ LỎNG';
