@@ -385,6 +385,8 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.25rem;
+    /* Fix Safari background-clip vertical line rendering artifact */
+    clip-path: inset(0.5px);
 }
 
 .orb-sub-text {
